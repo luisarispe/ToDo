@@ -14,6 +14,7 @@ export class TaskService {
     const task: Task = {
       id: uuid(),
       task: createTaskDto.task.toLocaleLowerCase(),
+      status: createTaskDto.status,
       defeated: createTaskDto.defeated,
       createdAt: new Date()
     }
