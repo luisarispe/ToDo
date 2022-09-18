@@ -1,7 +1,7 @@
 export enum Status{
-    Done=1,
-    ToDo=2  ,
-    Expired=3
+    Done='DONE',
+    ToDo='TODO',
+    Expired='EXPIRED'
 }
 
 export class Task {
