@@ -1,52 +1,57 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
 import { CreateTaskDto } from './dto/create-task.dto';
 import { UpdateTaskDto } from './dto/update-task.dto';
 import { Task } from './entities/task.entity';
-
-import { v4 as uuid } from "uuid";
+import { Model } from 'mongoose';
+import { InjectModel } from '@nestjs/mongoose';
 
 @Injectable()
 export class TaskService {
 
   private tasks: Task[] = [];
+  constructor(
+    @InjectModel(Task.name)
+    private readonly taskModel: Model<Task>
+  ) { }
 
-  create(createTaskDto: CreateTaskDto) {
-    const task: Task = {
-      id: uuid(),
-      task: createTaskDto.task.toLocaleLowerCase(),
-      status: createTaskDto.status,
-      defeated: createTaskDto.defeated,
-      createdAt: new Date()
+  async create(createTaskDto: CreateTaskDto) {
+    try {
+      createTaskDto.task = createTaskDto.task.toLocaleLowerCase();
+      let task: Task = await this.taskModel.create(createTaskDto);
+      return task;
+    } catch (error) {
+      this.handleExceptions(error);
     }
-    this.tasks.push(task);
-    return task;
   }
 
   findAll() {
     return this.tasks;
   }
 
-  findOne(id: string) {
-    const task = this.tasks.find(task => task.id === id);
+  async findOne(id: string) {
+    try {
+      let task = await this.taskModel.findById({ _id: id });
 
-    if (!task) throw new NotFoundException(`Task with id ${id} not found`)
+      return task;
+    } catch (error) {
+      console.log(error);
+    }
 
-    return task
   }
 
   update(id: string, updateTaskDto: UpdateTaskDto) {
 
     let taskDB = this.findOne(id);
 
-    this.tasks = this.tasks.map(task => {
+    // this.tasks = this.tasks.map(task => {
 
-      if (task.id === id) {
-        taskDB.createdAt = new Date();
-        taskDB = { ...taskDB, ...updateTaskDto };
-        return taskDB;
-      }
-      return task;
-    })
+    //   if (task.id === id) {
+    //     taskDB.createdAt = new Date();
+    //     taskDB = { ...taskDB, ...updateTaskDto };
+    //     return taskDB;
+    //   }
+    //   return task;
+    // })
     return taskDB;
 
   }
@@ -60,5 +65,8 @@ export class TaskService {
     })
 
     return `This action removes a #${id} task`;
+  }
+  private handleExceptions(error: any) {
+    throw new InternalServerErrorException(`Can´t update/create Task - Check server logs`);
   }
 }
