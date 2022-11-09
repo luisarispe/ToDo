@@ -8,26 +8,23 @@ export enum Status {
     Expired = 'EXPIRED'
 }
 
-@Schema()
+@Schema({ timestamps: true })
 export class Task extends Document {
 
     @Prop({
-        required: true
+        required: true,
+        trim: true,
+        lowercase: true
     })
     task: string;
     @Prop({
-        required: true
+        required: true,
     })
     status: Status;
     @Prop({
         required: true
     })
     defeated: Date;
-    @Prop({
-        required: true,
-        default: Date.now
-    })
-    createdAt: Date;
 }
 
 export const TaskSchema = SchemaFactory.createForClass(Task);
