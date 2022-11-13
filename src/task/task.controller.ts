@@ -1,8 +1,9 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, ParseUUIDPipe } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, ParseUUIDPipe, Query } from '@nestjs/common';
 import { TaskService } from './task.service';
 import { CreateTaskDto } from './dto/create-task.dto';
 import { UpdateTaskDto } from './dto/update-task.dto';
 import { ParseMongoIdPipe } from '../common/pipes/parse-mongo-id.pipe';
+import { PaginationDto } from 'src/common/dto/pagination.dto';
 
 
 @Controller('task')
@@ -15,8 +16,8 @@ export class TaskController {
   }
 
   @Get()
-  findAll() {
-    return this.taskService.findAll();
+  findAll(@Query() paginationDto: PaginationDto) {
+    return this.taskService.findAll(paginationDto);
   }
 
   @Get(':id')
