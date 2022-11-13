@@ -14,6 +14,7 @@ import { Task, TaskSchema } from './entities/task.entity';
         schema: TaskSchema
       }
     ])
-  ]
+  ],
+  exports: [TaskService]
 })
 export class TaskModule { }

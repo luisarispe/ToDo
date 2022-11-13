@@ -4,11 +4,11 @@ import { UpdateTaskDto } from './dto/update-task.dto';
 import { Task } from './entities/task.entity';
 import { Model } from 'mongoose';
 import { InjectModel } from '@nestjs/mongoose';
+import { PaginationDto } from 'src/common/dto/pagination.dto';
 
 @Injectable()
 export class TaskService {
 
-  private tasks: Task[] = [];
   constructor(
     @InjectModel(Task.name)
     private readonly taskModel: Model<Task>
@@ -22,9 +22,27 @@ export class TaskService {
       this.handleExceptions(error);
     }
   }
+  async createAll(createDto: CreateTaskDto[]) {
+    try {
+      let tasks = await this.taskModel.insertMany(createDto);
+      return tasks;
+    } catch (error) {
+      this.handleExceptions(error);
+    }
+  }
 
-  findAll() {
-    return this.tasks;
+  async findAll(paginationDto: PaginationDto) {
+
+    try {
+      let { limit = 10, offset = 0 } = paginationDto;
+      let tasks: Task[] = await this.taskModel.find().limit(limit).skip(offset).sort({
+        _id: 1
+      }).select('-__v');
+      return tasks;
+    } catch (error) {
+      throw new InternalServerErrorException();
+    }
+
   }
 
   async findOne(id: string) {
@@ -55,6 +73,13 @@ export class TaskService {
       return task;
     } catch (error) {
       throw new InternalServerErrorException(`Can´t delete Task - Check server logs`);
+    }
+  }
+  async removeAll() {
+    try {
+      await this.taskModel.deleteMany();
+    } catch (error) {
+      throw new InternalServerErrorException(`Can´t delete tasks - Check server logs`);
     }
   }
   private handleExceptions(error: any) {
