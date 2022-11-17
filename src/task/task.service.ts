@@ -5,14 +5,18 @@ import { Task } from './entities/task.entity';
 import { Model } from 'mongoose';
 import { InjectModel } from '@nestjs/mongoose';
 import { PaginationDto } from 'src/common/dto/pagination.dto';
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class TaskService {
-
+  private defaultLimit:number;
   constructor(
     @InjectModel(Task.name)
-    private readonly taskModel: Model<Task>
-  ) { }
+    private readonly taskModel: Model<Task>,
+    private readonly configService: ConfigService
+  ) { 
+    this.defaultLimit=configService.get<number>('defaultLimit');
+  }
 
   async create(createTaskDto: CreateTaskDto) {
     try {
@@ -34,7 +38,7 @@ export class TaskService {
   async findAll(paginationDto: PaginationDto) {
 
     try {
-      let { limit = 10, offset = 0 } = paginationDto;
+      let { limit = this.defaultLimit, offset = 0 } = paginationDto;
       let tasks: Task[] = await this.taskModel.find().limit(limit).skip(offset).sort({
         _id: 1
       }).select('-__v');
